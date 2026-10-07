@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 
 @Entity
 @Table(name = "users")
@@ -20,6 +18,9 @@ public class User {
 
     @OneToOne(mappedBy = "user")
     private MemberProfile memberProfile;
+
+    @OneToOne(mappedBy = "user")
+    private CoachProfile coachProfile;
 
     @Column(name = "full_name", nullable = false, length = 150)
     private String fullName;
@@ -169,5 +170,16 @@ public class User {
 
     public void setUpdatedAt(OffsetDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public CoachProfile getCoachProfile() {
+        return coachProfile;
+    }
+
+    public void setCoachProfile(CoachProfile coachProfile) {
+        this.coachProfile = coachProfile;
+        if (coachProfile != null) {
+            coachProfile.setUser(this);
+        }
     }
 }
