@@ -29,6 +29,9 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<AiChatLog> aiChatLogs;
 
+    @OneToMany(mappedBy = "user")
+    private List<AuditLog> auditLogs;
+
     @Column(name = "full_name", nullable = false, length = 150)
     private String fullName;
 
@@ -207,5 +210,13 @@ public class User {
 
     public void setAiChatLogs(List<AiChatLog> aiChatLogs) {
         this.aiChatLogs = aiChatLogs;
+    }
+
+    public List<AuditLog> getAuditLogs() {
+        return auditLogs;
+    }
+
+    public void setAuditLogs(List<AuditLog> auditLogs) {
+        this.auditLogs = auditLogs;
     }
 }
