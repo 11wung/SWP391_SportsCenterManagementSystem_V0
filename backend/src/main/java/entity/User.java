@@ -22,6 +22,9 @@ public class User {
     @OneToOne(mappedBy = "user")
     private CoachProfile coachProfile;
 
+    @OneToOne(mappedBy = "user")
+    private StaffProfile staffProfile;
+
     @Column(name = "full_name", nullable = false, length = 150)
     private String fullName;
 
@@ -180,6 +183,17 @@ public class User {
         this.coachProfile = coachProfile;
         if (coachProfile != null) {
             coachProfile.setUser(this);
+        }
+    }
+
+    public StaffProfile getStaffProfile() {
+        return staffProfile;
+    }
+
+    public void setStaffProfile(StaffProfile staffProfile) {
+        this.staffProfile = staffProfile;
+        if (staffProfile != null) {
+            staffProfile.setUser(this);
         }
     }
 }
