@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -24,6 +25,9 @@ public class User {
 
     @OneToOne(mappedBy = "user")
     private StaffProfile staffProfile;
+
+    @OneToMany(mappedBy = "user")
+    private List<AiChatLog> aiChatLogs;
 
     @Column(name = "full_name", nullable = false, length = 150)
     private String fullName;
@@ -195,5 +199,13 @@ public class User {
         if (staffProfile != null) {
             staffProfile.setUser(this);
         }
+    }
+
+    public List<AiChatLog> getAiChatLogs() {
+        return aiChatLogs;
+    }
+
+    public void setAiChatLogs(List<AiChatLog> aiChatLogs) {
+        this.aiChatLogs = aiChatLogs;
     }
 }
