@@ -1,9 +1,6 @@
 package entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -11,9 +8,6 @@ import java.util.List;
 
 @Entity
 @Table(name = "users")
-@Builder
-@Data
-@AllArgsConstructor
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -78,6 +72,8 @@ public class User {
         this.updatedAt = now;
     }
 
+    // --- CONSTRUCTORS (Hàm khởi tạo) ---
+    // Constructor mặc định (bắt buộc cho JPA)
     public User() {
     }
 
