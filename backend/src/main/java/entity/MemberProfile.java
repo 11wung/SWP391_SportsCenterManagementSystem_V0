@@ -1,11 +1,14 @@
 package entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "member_profiles") // ánh xạ tới bảng DB
+@Builder
 public class MemberProfile {
     @Id
     @Column(name = "user_id") // ứng với tên trong DB

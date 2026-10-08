@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -79,8 +78,6 @@ public class User {
         this.updatedAt = now;
     }
 
-    // --- CONSTRUCTORS (Hàm khởi tạo) ---
-    // Constructor mặc định (bắt buộc cho JPA)
     public User() {
     }
 
