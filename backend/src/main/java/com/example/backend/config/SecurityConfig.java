@@ -1,17 +1,25 @@
 package com.example.backend.config;
 
+import com.example.backend.security.BoLocBaoMatJwt;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration; // Bắt buộc phải import
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity// <--- Đã bổ sung nhãn quan trọng này
 public class SecurityConfig {
+
+    private final BoLocBaoMatJwt boLocBaoMatJwt;
+
+    public SecurityConfig(BoLocBaoMatJwt boLocBaoMatJwt) {
+        this.boLocBaoMatJwt = boLocBaoMatJwt;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -23,11 +31,12 @@ public class SecurityConfig {
         http
                 // 1. Tắt CSRF vì đây là REST API (dùng Postman/React/Angular gọi lên)
                 .csrf(csrf -> csrf.disable())
-
-                // 2. Cấu hình phân quyền đường dẫn
+                .formLogin(form -> form.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll() // Cho phép tất cả gọi vào các API /api/auth (đăng ký, đăng nhập...) mà không cần token
-                );
+                        .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/ping").permitAll()
+                        .anyRequest().authenticated())
+                .addFilterBefore(boLocBaoMatJwt, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

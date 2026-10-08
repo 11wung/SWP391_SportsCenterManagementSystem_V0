@@ -1,20 +1,20 @@
-package com.example.backend.service; // Đảm bảo dòng này trỏ đúng đường dẫn thư mục của bạn, không để chữ 'service' cộc lốc
+package com.example.backend.service;
 
-
+import com.example.backend.dto.LoginRequest;
+import com.example.backend.dto.LoginResponse;
 import com.example.backend.dto.RegisterRequest;
 import com.example.backend.dto.RegisterResponse;
 import com.example.backend.entity.MemberProfile;
 import com.example.backend.entity.Role;
 import com.example.backend.entity.User;
 import com.example.backend.exception.BusinessRuleException;
-
+import com.example.backend.repository.RoleRepository;
+import com.example.backend.repository.UserRepository;
+import com.example.backend.security.JwtTokenManager;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import com.example.backend.repository.RoleRepository;
-import com.example.backend.repository.UserRepository;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -26,10 +26,10 @@ public class AuthService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtTokenManager jwtTokenManager;
 
     @Transactional
-    public RegisterResponse register(RegisterRequest request) { // Đổi void thành RegisterResponse, viết thường chữ 'r'
-
+    public RegisterResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new BusinessRuleException("Email already exists");
         }
@@ -60,8 +60,29 @@ public class AuthService {
                 savedUser.getId(),
                 savedUser.getFullName(),
                 savedUser.getEmail(),
-                savedUser.getPhone()
-        );
+                savedUser.getPhone());
     }
 
+    public LoginResponse login(LoginRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new BusinessRuleException("Sai email hoặc mật khẩu!"));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            throw new BusinessRuleException("Sai email hoặc mật khẩu!");
+        }
+
+        if (!user.getIsActive()) {
+            throw new BusinessRuleException("Tài khoản của bạn đã bị khóa!");
+        }
+
+        String token = jwtTokenManager.capVeChoThanhVien(user.getEmail());
+
+        LoginResponse response = new LoginResponse();
+        response.setToken(token);
+        response.setEmail(user.getEmail());
+        response.setFullName(user.getFullName());
+        response.setRole(user.getRole().getCode());
+
+        return response;
+    }
 }
