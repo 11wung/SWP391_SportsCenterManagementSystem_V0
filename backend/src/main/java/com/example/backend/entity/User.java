@@ -23,7 +23,7 @@ public class User {
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
 
-    @OneToOne(mappedBy = "user")
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private MemberProfile memberProfile;
 
     @OneToOne(mappedBy = "user")
@@ -78,12 +78,9 @@ public class User {
         this.updatedAt = now;
     }
 
-    // --- CONSTRUCTORS (Hàm khởi tạo) ---
-    // Constructor mặc định (bắt buộc cho JPA)
     public User() {
     }
 
-    // --- GETTERS VÀ SETTERS ---
     public Long getId() {
         return id;
     }

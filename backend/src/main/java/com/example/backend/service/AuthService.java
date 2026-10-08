@@ -47,7 +47,6 @@ public class AuthService {
                 .phone(request.getPhone())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .isActive(true)
-                .createdAt(OffsetDateTime.now())
                 .build();
 
         MemberProfile profile = MemberProfile.builder()
