@@ -32,6 +32,9 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<AuditLog> auditLogs;
 
+    @OneToMany(mappedBy = "user")
+    private List<MemberSubscription> subscriptions;
+
     @Column(name = "full_name", nullable = false, length = 150)
     private String fullName;
 
@@ -218,5 +221,13 @@ public class User {
 
     public void setAuditLogs(List<AuditLog> auditLogs) {
         this.auditLogs = auditLogs;
+    }
+
+    public List<MemberSubscription> getSubscriptions() {
+        return subscriptions;
+    }
+
+    public void setSubscriptions(List<MemberSubscription> subscriptions) {
+        this.subscriptions = subscriptions;
     }
 }
