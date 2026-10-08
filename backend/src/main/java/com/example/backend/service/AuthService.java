@@ -7,6 +7,7 @@ import com.example.backend.entity.MemberProfile;
 import com.example.backend.entity.Role;
 import com.example.backend.entity.User;
 import com.example.backend.exception.BusinessRuleException;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -46,7 +47,6 @@ public class AuthService {
                 .phone(request.getPhone())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .isActive(true)
-                .createdAt(OffsetDateTime.now())
                 .build();
 
         MemberProfile profile = MemberProfile.builder()
