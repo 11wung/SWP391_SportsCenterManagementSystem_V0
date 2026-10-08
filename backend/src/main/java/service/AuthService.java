@@ -2,6 +2,9 @@ package service;
 
 import config.SecurityConfig;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import dto.LoginRequest;
+import dto.LoginResponse;
 import dto.RegisterRequest;
 import entity.Role;
 import entity.User;
@@ -9,6 +12,7 @@ import exception.BusinessRuleException;
 import org.springframework.stereotype.Service;
 import repository.RoleRepository;
 import repository.UserRepository;
+import security.JwtTokenManager;
 
 import java.time.OffsetDateTime;
 
@@ -18,13 +22,15 @@ public class AuthService {
     private final RoleRepository roleRepository;
     private final SecurityConfig sercurityConfig;
     private final PasswordEncoder passwordEncoder;
+    private final JwtTokenManager jwtTokenManager;
 
     public AuthService(UserRepository userRepository, RoleRepository roleRepository, SecurityConfig sercurityConfig,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder, JwtTokenManager jwtTokenManager) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.sercurityConfig = sercurityConfig;
         this.passwordEncoder = passwordEncoder;
+        this.jwtTokenManager = jwtTokenManager;
     }
 
     public void Register(RegisterRequest request) {
@@ -49,5 +55,30 @@ public class AuthService {
 
         // Lưu vào Database
         userRepository.save(newUser);
+    }
+
+    public LoginResponse login(LoginRequest request) {
+        // 1.tìm user theo email
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new BusinessRuleException("Sai email hoặc mật khẩu!"));
+        // 2.kiểm tra mật khẩu
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            throw new BusinessRuleException("Sai email hoặc mật khẩu!");
+        }
+        // 3.iểm tra xem tài khoản có đang hoạt động không
+        if (!user.getIsActive()) {
+            throw new BusinessRuleException("Tài khoản của bạn đã bị khóa!");
+        }
+        // 4.cấp JWT token
+        String token = jwtTokenManager.capVeChoThanhVien(user.getEmail()); // hoặc truyền thêm tham số role nếu hàm của
+                                                                           // bạn yêu cầu
+        // 5.đóng gói kết quả trả về
+        LoginResponse response = new LoginResponse();
+        response.setToken(token);
+        response.setEmail(user.getEmail());
+        response.setFullName(user.getFullName());
+        response.setRole(user.getRole().getCode());
+
+        return response;
     }
 }
