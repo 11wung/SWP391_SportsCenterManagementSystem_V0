@@ -37,7 +37,7 @@ public class AuthService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new BusinessRuleException("Email already exists");
         }
-        if (userRepository.existByPhone(request.getPhone())) {
+        if (userRepository.existsByPhone(request.getPhone())) {
             throw new BusinessRuleException("Phone already exists");
         }
         Role role = roleRepository.findByCode("MEMBER")
