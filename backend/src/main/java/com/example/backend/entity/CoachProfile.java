@@ -19,10 +19,10 @@ public class CoachProfile {
     @Column(name = "specialty", length = 255)
     private String specialty;
 
-    @Column(name = "year_experience")
+    @Column(name = "years_experience")
     private Short yearsExperience;
 
-    @Column(name = "certification", columnDefinition = "TEXT")
+    @Column(name = "certifications", columnDefinition = "TEXT")
     private String certifications;
 
     @Column(name = "rating", precision = 2, scale = 1)
