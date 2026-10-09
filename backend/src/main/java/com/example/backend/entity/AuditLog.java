@@ -24,6 +24,10 @@ public class AuditLog {
     @Column(name = "resource_id", length = 50) // ID của tài nguyên bị tác động (Member,Coach,...)
     private String resourceId;
 
+    // Lưu diff JSON trước/sau khi thay đổi (khớp với cột jsonb trong DB)
+    @Column(name = "payload_diff", columnDefinition = "jsonb")
+    private String payloadDiff;
+
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
@@ -77,6 +81,14 @@ public class AuditLog {
 
     public void setResourceId(String resourceId) {
         this.resourceId = resourceId;
+    }
+
+    public String getPayloadDiff() {
+        return payloadDiff;
+    }
+
+    public void setPayloadDiff(String payloadDiff) {
+        this.payloadDiff = payloadDiff;
     }
 
     public OffsetDateTime getCreatedAt() {
