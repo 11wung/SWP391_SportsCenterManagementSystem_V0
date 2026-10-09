@@ -1,19 +1,19 @@
 package com.example.backend.security;
 
-import com.example.backend.security.JwtTokenManager;
-import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 @Component
-public class BoLocBaoMatJwt implements Filter {
+public class BoLocBaoMatJwt extends OncePerRequestFilter {
 
     private final JwtTokenManager quanLyVe;
 
@@ -22,9 +22,9 @@ public class BoLocBaoMatJwt implements Filter {
     }
 
     @Override
-    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) {
+    protected void doFilterInternal(HttpServletRequest yeuCauHttp, HttpServletResponse res, FilterChain chain)
+            throws ServletException, IOException {
         try {
-            HttpServletRequest yeuCauHttp = (HttpServletRequest) req;
             String dauVaoHeader = yeuCauHttp.getHeader("Authorization");
 
             if (dauVaoHeader != null && dauVaoHeader.startsWith("Bearer ")) {
@@ -39,13 +39,9 @@ public class BoLocBaoMatJwt implements Filter {
                     }
                 }
             }
-            chain.doFilter(req, res);
         } catch (Exception e) {
             System.out.println("Lỗi ở trạm kiểm soát: " + e.getMessage());
-            try {
-                chain.doFilter(req, res);
-            } catch (Exception ignore) {
-            }
         }
+        chain.doFilter(yeuCauHttp, res);
     }
 }
