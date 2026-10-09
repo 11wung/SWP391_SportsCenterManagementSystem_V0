@@ -16,9 +16,11 @@ import java.util.ArrayList;
 public class BoLocBaoMatJwt extends OncePerRequestFilter {
 
     private final JwtTokenManager quanLyVe;
+    private final com.example.backend.repository.UserRepository userRepository;
 
-    public BoLocBaoMatJwt(JwtTokenManager quanLyVe) {
+    public BoLocBaoMatJwt(JwtTokenManager quanLyVe, com.example.backend.repository.UserRepository userRepository) {
         this.quanLyVe = quanLyVe;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -33,9 +35,16 @@ public class BoLocBaoMatJwt extends OncePerRequestFilter {
 
                 if (emailNguoiDung != null && quanLyVe.soiVeCoHopLeKhong(chuoiVeHienTai)) {
                     if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                        UsernamePasswordAuthenticationToken theHanhKhach = new UsernamePasswordAuthenticationToken(
-                                emailNguoiDung, null, new ArrayList<>());
-                        SecurityContextHolder.getContext().setAuthentication(theHanhKhach);
+                        com.example.backend.entity.User user = userRepository.findByEmail(emailNguoiDung).orElse(null);
+                        if (user != null) {
+                            java.util.List<org.springframework.security.core.authority.SimpleGrantedAuthority> authorities = 
+                                java.util.Collections.singletonList(
+                                    new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + user.getRole().getCode())
+                                );
+                            UsernamePasswordAuthenticationToken theHanhKhach = new UsernamePasswordAuthenticationToken(
+                                    emailNguoiDung, null, authorities);
+                            SecurityContextHolder.getContext().setAuthentication(theHanhKhach);
+                        }
                     }
                 }
             }
