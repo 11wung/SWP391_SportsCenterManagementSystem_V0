@@ -35,11 +35,21 @@ public class UserController {
         return ResponseEntity.ok(userService.updateMyProfile(email, request));
     }
 
-    // 3. Xem danh sách tất cả người dùng (Dành cho Manager / Receptionist)
+    // 3. Xem danh sách tất cả người dùng (Có tìm kiếm và lọc theo Role)
     @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('MANAGER', 'RECEPTIONIST')")
     @GetMapping
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<List<UserResponse>> getAllUsers(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String role) {
+        return ResponseEntity.ok(userService.searchUsers(search, role));
+    }
+
+    // Lễ tân đăng ký hội viên tại quầy
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('MANAGER', 'RECEPTIONIST')")
+    @PostMapping("/members")
+    public ResponseEntity<UserResponse> createMember(@jakarta.validation.Valid @RequestBody com.example.backend.dto.CreateUserRequest request) {
+        request.setRoleCode("MEMBER"); // Ép cứng quyền MEMBER cho API này
+        return ResponseEntity.ok(userService.createUser(request, passwordEncoder, roleRepository));
     }
 
     // 4. Xem chi tiết 1 người dùng bằng ID

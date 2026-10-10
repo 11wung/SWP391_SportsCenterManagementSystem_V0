@@ -7,7 +7,7 @@ import java.time.LocalDate;
 public class UpdateUserRequest {
     private String fullName;
     private String phone;
-    private String roleCode; // Manager có quyền đổi role của nhân viên
+    private String roleCode;
     private String avatarUrl;
     private String gender;
     private LocalDate dateOfBirth;

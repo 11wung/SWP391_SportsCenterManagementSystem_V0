@@ -15,12 +15,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.example.backend.repository.CoachProfileRepository;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
     private final MemberProfileRepository memberProfileRepository;
+    private final CoachProfileRepository coachProfileRepository;
 
     public UserResponse getMyProfile(String email) {
         User user = userRepository.findByEmail(email)
@@ -33,32 +36,27 @@ public class UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BusinessRuleException("Không tìm thấy người dùng", HttpStatus.NOT_FOUND));
 
-        if (request.getFullName() != null) user.setFullName(request.getFullName());
-        if (request.getPhone() != null && !request.getPhone().equals(user.getPhone())) {
-            if (userRepository.existsByPhone(request.getPhone())) {
-                throw new BusinessRuleException("Số điện thoại đã được sử dụng bởi tài khoản khác", HttpStatus.BAD_REQUEST);
-            }
-            user.setPhone(request.getPhone());
-        }
-        if (request.getAvatarUrl() != null) user.setAvatarUrl(request.getAvatarUrl());
-        if (request.getGender() != null) user.setGender(request.getGender());
-        if (request.getDateOfBirth() != null) user.setDateOfBirth(request.getDateOfBirth());
+        updateBasicFields(user, request.getFullName(), request.getPhone(), request.getAvatarUrl(), request.getGender(), request.getDateOfBirth());
 
-        // Update Member Profile if user is MEMBER
         if (user.getRole().getCode().equals("MEMBER") && user.getMemberProfile() != null) {
             MemberProfile profile = user.getMemberProfile();
             if (request.getHeightCm() != null) profile.setHeightCm(request.getHeightCm());
             if (request.getWeightKg() != null) profile.setWeightKg(request.getWeightKg());
             if (request.getFitnessGoal() != null) profile.setFitnessGoal(request.getFitnessGoal());
             memberProfileRepository.save(profile);
+        } else if (user.getRole().getCode().equals("COACH") && user.getCoachProfile() != null) {
+            com.example.backend.entity.CoachProfile profile = user.getCoachProfile();
+            if (request.getYearsExperience() != null) profile.setYearsExperience(request.getYearsExperience());
+            if (request.getCertifications() != null) profile.setCertifications(request.getCertifications());
+            coachProfileRepository.save(profile);
         }
 
         userRepository.save(user);
         return mapToUserResponse(user);
     }
 
-    public List<UserResponse> getAllUsers() {
-        return userRepository.findAll().stream()
+    public List<UserResponse> searchUsers(String search, String role) {
+        return userRepository.searchUsers(search, role).stream()
                 .map(this::mapToUserResponse)
                 .collect(Collectors.toList());
     }
@@ -71,6 +69,9 @@ public class UserService {
 
     @Transactional
     public UserResponse createUser(com.example.backend.dto.CreateUserRequest request, org.springframework.security.crypto.password.PasswordEncoder passwordEncoder, com.example.backend.repository.RoleRepository roleRepository) {
+        if (request.getRoleCode() == null || request.getRoleCode().trim().isEmpty()) {
+            throw new BusinessRuleException("Role không được để trống", HttpStatus.BAD_REQUEST);
+        }
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new BusinessRuleException("Email đã tồn tại", HttpStatus.BAD_REQUEST);
         }
@@ -109,26 +110,29 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new BusinessRuleException("Không tìm thấy người dùng", HttpStatus.NOT_FOUND));
 
-        if (request.getFullName() != null) user.setFullName(request.getFullName());
-        if (request.getPhone() != null && !request.getPhone().equals(user.getPhone())) {
-            if (userRepository.existsByPhone(request.getPhone())) {
-                throw new BusinessRuleException("Số điện thoại đã tồn tại", HttpStatus.BAD_REQUEST);
-            }
-            user.setPhone(request.getPhone());
-        }
-        if (request.getAvatarUrl() != null) user.setAvatarUrl(request.getAvatarUrl());
-        if (request.getGender() != null) user.setGender(request.getGender());
-        if (request.getDateOfBirth() != null) user.setDateOfBirth(request.getDateOfBirth());
+        updateBasicFields(user, request.getFullName(), request.getPhone(), request.getAvatarUrl(), request.getGender(), request.getDateOfBirth());
         
         if (request.getRoleCode() != null && !request.getRoleCode().equals(user.getRole().getCode())) {
             com.example.backend.entity.Role role = roleRepository.findByCode(request.getRoleCode())
                     .orElseThrow(() -> new BusinessRuleException("Role không hợp lệ", HttpStatus.BAD_REQUEST));
             user.setRole(role);
-            // Lưu ý: Đổi role có thể cần xóa profile cũ và tạo profile mới, nhưng để đơn giản ta chỉ đổi role ở đây.
         }
 
         userRepository.save(user);
         return mapToUserResponse(user);
+    }
+
+    private void updateBasicFields(User user, String fullName, String phone, String avatarUrl, String gender, java.time.LocalDate dateOfBirth) {
+        if (fullName != null) user.setFullName(fullName);
+        if (phone != null && !phone.equals(user.getPhone())) {
+            if (userRepository.existsByPhone(phone)) {
+                throw new BusinessRuleException("Số điện thoại đã tồn tại", HttpStatus.BAD_REQUEST);
+            }
+            user.setPhone(phone);
+        }
+        if (avatarUrl != null) user.setAvatarUrl(avatarUrl);
+        if (gender != null) user.setGender(gender);
+        if (dateOfBirth != null) user.setDateOfBirth(dateOfBirth);
     }
 
     @Transactional
@@ -166,6 +170,10 @@ public class UserService {
                    .weightKg(user.getMemberProfile().getWeightKg())
                    .fitnessGoal(user.getMemberProfile().getFitnessGoal())
                    .membershipTier(user.getMemberProfile().getMembershipTier());
+        }
+        if (user.getCoachProfile() != null) {
+            builder.yearsExperience(user.getCoachProfile().getYearsExperience())
+                   .certifications(user.getCoachProfile().getCertifications());
         }
 
         return builder.build();

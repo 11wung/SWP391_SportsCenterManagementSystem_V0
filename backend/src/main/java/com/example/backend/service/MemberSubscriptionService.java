@@ -38,6 +38,12 @@ public class MemberSubscriptionService {
                 .collect(Collectors.toList());
     }
 
+    public List<MemberSubscriptionResponse> getActiveSubscriptionsByUserId(Long userId) {
+        return subscriptionRepository.findActiveSubscriptionsByUserId(userId).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public MemberSubscriptionResponse createSubscription(MemberSubscriptionRequest request, String createdByEmail) {
         User user = userRepository.findById(request.getUserId())
@@ -55,15 +61,25 @@ public class MemberSubscriptionService {
             creator = userRepository.findByEmail(createdByEmail).orElse(null);
         }
 
+        // Logic gia hạn cộng dồn ngày nếu đang có gói ACTIVE tương tự
+        List<MemberSubscription> activeSubs = subscriptionRepository.findActiveSubscriptionsByUserId(user.getId());
+        LocalDate newStartDate = LocalDate.now();
+        for (MemberSubscription sub : activeSubs) {
+            if (sub.getMembershipPackage().getId().equals(pkg.getId())) {
+                newStartDate = sub.getEndDate();
+                break;
+            }
+        }
+
         MemberSubscription sub = new MemberSubscription();
         sub.setUser(user);
         sub.setMembershipPackage(pkg);
         sub.setPackageNameSnapshot(pkg.getName());
         sub.setMaxClassesPerWeekSnapshot(pkg.getMaxClassesPerWeek());
         sub.setTotalAmount(pkg.getPrice());
-        sub.setStartDate(LocalDate.now());
-        sub.setEndDate(LocalDate.now().plusMonths(pkg.getDurationMonths()));
-        sub.setStatus("ACTIVE"); // Có thể là PENDING nếu chưa thanh toán, nhưng Lễ tân đăng ký coi như đã thu tiền
+        sub.setStartDate(newStartDate);
+        sub.setEndDate(newStartDate.plusMonths(pkg.getDurationMonths()));
+        sub.setStatus("PENDING"); // Chỉ ACTIVE khi thanh toán thành công
         sub.setCreatedBy(creator);
 
         return mapToResponse(subscriptionRepository.save(sub));

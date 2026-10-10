@@ -44,6 +44,14 @@ public class MemberSubscriptionController {
         return ResponseEntity.ok(subscriptionService.getSubscriptionsByUserId(userId));
     }
 
+    // 3.1 Hội viên xem CÁC GÓI TẬP ĐANG ACTIVE CỦA MÌNH
+    @GetMapping("/me/active")
+    public ResponseEntity<List<MemberSubscriptionResponse>> getMyActiveSubscriptions(Authentication authentication) {
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email).orElseThrow();
+        return ResponseEntity.ok(subscriptionService.getActiveSubscriptionsByUserId(user.getId()));
+    }
+
     // 4. Lễ tân / Manager đăng ký gói tập cho hội viên tại quầy
     @PreAuthorize("hasAnyRole('MANAGER', 'RECEPTIONIST')")
     @PostMapping
@@ -52,5 +60,20 @@ public class MemberSubscriptionController {
             Authentication authentication) {
         String createdByEmail = authentication.getName();
         return ResponseEntity.ok(subscriptionService.createSubscription(request, createdByEmail));
+    }
+
+    // 4.1 Hội viên TỰ ĐĂNG KÝ / GIA HẠN GÓI TẬP
+    @PostMapping("/me")
+    public ResponseEntity<MemberSubscriptionResponse> subscribeMe(
+            @RequestParam Long packageId,
+            Authentication authentication) {
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email).orElseThrow();
+        
+        MemberSubscriptionRequest request = new MemberSubscriptionRequest();
+        request.setUserId(user.getId());
+        request.setPackageId(packageId);
+        
+        return ResponseEntity.ok(subscriptionService.createSubscription(request, email));
     }
 }

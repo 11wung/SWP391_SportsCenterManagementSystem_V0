@@ -21,6 +21,5 @@ public class CreateUserRequest {
     @Size(min = 6, message = "Mật khẩu phải có ít nhất 6 ký tự")
     private String password;
 
-    @NotBlank(message = "Role không được để trống (MEMBER, COACH, RECEPTIONIST, MANAGER)")
     private String roleCode;
 }

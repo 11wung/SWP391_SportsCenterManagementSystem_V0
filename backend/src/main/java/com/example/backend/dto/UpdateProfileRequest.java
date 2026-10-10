@@ -16,4 +16,8 @@ public class UpdateProfileRequest {
     private BigDecimal heightCm;
     private BigDecimal weightKg;
     private String fitnessGoal;
+
+    // Coach profile specific fields
+    private Short yearsExperience;
+    private String certifications;
 }

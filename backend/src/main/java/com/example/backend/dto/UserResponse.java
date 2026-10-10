@@ -27,4 +27,8 @@ public class UserResponse {
     private BigDecimal weightKg;
     private String fitnessGoal;
     private String membershipTier;
+
+    // Coach profile specific fields
+    private Short yearsExperience;
+    private String certifications;
 }
