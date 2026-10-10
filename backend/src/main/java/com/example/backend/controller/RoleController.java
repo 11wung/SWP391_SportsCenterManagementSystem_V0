@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 public class RoleController {
 
     private final RoleRepository roleRepository;
+    private final com.example.backend.repository.PermissionRepository permissionRepository;
+    private final com.example.backend.repository.RolePermissionRepository rolePermissionRepository;
 
     @PreAuthorize("hasRole('MANAGER')")
     @GetMapping
@@ -32,9 +34,10 @@ public class RoleController {
         }).collect(Collectors.toList());
         return ResponseEntity.ok(roles);
     }
+
     @PreAuthorize("hasRole('MANAGER')")
     @org.springframework.web.bind.annotation.PostMapping("/{roleId}/permissions/{permissionId}")
-    public ResponseEntity<String> assignPermissionToRole(@org.springframework.web.bind.annotation.PathVariable Long roleId, @org.springframework.web.bind.annotation.PathVariable Long permissionId, @org.springframework.beans.factory.annotation.Autowired com.example.backend.repository.PermissionRepository permissionRepository, @org.springframework.beans.factory.annotation.Autowired com.example.backend.repository.RolePermissionRepository rolePermissionRepository) {
+    public ResponseEntity<String> assignPermissionToRole(@org.springframework.web.bind.annotation.PathVariable Long roleId, @org.springframework.web.bind.annotation.PathVariable Long permissionId) {
         com.example.backend.entity.Role role = roleRepository.findById(roleId).orElseThrow();
         com.example.backend.entity.Permission permission = permissionRepository.findById(permissionId).orElseThrow();
         
@@ -48,7 +51,7 @@ public class RoleController {
 
     @PreAuthorize("hasRole('MANAGER')")
     @org.springframework.web.bind.annotation.DeleteMapping("/{roleId}/permissions/{permissionId}")
-    public ResponseEntity<String> removePermissionFromRole(@org.springframework.web.bind.annotation.PathVariable Long roleId, @org.springframework.web.bind.annotation.PathVariable Long permissionId, @org.springframework.beans.factory.annotation.Autowired com.example.backend.repository.RolePermissionRepository rolePermissionRepository) {
+    public ResponseEntity<String> removePermissionFromRole(@org.springframework.web.bind.annotation.PathVariable Long roleId, @org.springframework.web.bind.annotation.PathVariable Long permissionId) {
         com.example.backend.entity.RolePermissionId rpId = new com.example.backend.entity.RolePermissionId(roleId, permissionId);
         if (rolePermissionRepository.existsById(rpId)) {
             rolePermissionRepository.deleteById(rpId);

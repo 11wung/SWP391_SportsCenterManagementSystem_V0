@@ -38,7 +38,7 @@ public class BoLocBaoMatJwt extends OncePerRequestFilter {
 
                 if (emailNguoiDung != null && quanLyVe.soiVeCoHopLeKhong(chuoiVeHienTai)) {
                     if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                        User dbUser = userRepository.findByEmail(emailNguoiDung).orElse(null);
+                        User dbUser = userRepository.findWithPermissionsByEmail(emailNguoiDung).orElse(null);
                         
                         if (dbUser != null && dbUser.getIsActive()) {
                             java.util.List<org.springframework.security.core.authority.SimpleGrantedAuthority> authorities = new java.util.ArrayList<>();
