@@ -19,6 +19,7 @@ public class MemberProfile {
     @JoinColumn(name = "user_id") // 'user.id' vừa làm PK vừa làm FK
     private User user;
 
+    @Builder.Default
     @Column(name = "join_date", nullable = false)
     private LocalDate joinDate = LocalDate.now();
 
