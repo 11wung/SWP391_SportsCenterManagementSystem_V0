@@ -41,9 +41,17 @@ public class BoLocBaoMatJwt extends OncePerRequestFilter {
                         User dbUser = userRepository.findByEmail(emailNguoiDung).orElse(null);
                         
                         if (dbUser != null && dbUser.getIsActive()) {
-                            SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + dbUser.getRole().getCode());
+                            java.util.List<org.springframework.security.core.authority.SimpleGrantedAuthority> authorities = new java.util.ArrayList<>();
+                            authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + dbUser.getRole().getCode()));
+                            
+                            if (dbUser.getRole().getRolePermissions() != null) {
+                                for (com.example.backend.entity.RolePermission rp : dbUser.getRole().getRolePermissions()) {
+                                    authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority(rp.getPermission().getCode()));
+                                }
+                            }
+                            
                             UsernamePasswordAuthenticationToken theHanhKhach = new UsernamePasswordAuthenticationToken(
-                                    emailNguoiDung, null, Collections.singletonList(authority));
+                                    emailNguoiDung, null, authorities);
                             SecurityContextHolder.getContext().setAuthentication(theHanhKhach);
                         }
                     }

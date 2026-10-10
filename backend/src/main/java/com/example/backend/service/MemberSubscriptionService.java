@@ -61,26 +61,44 @@ public class MemberSubscriptionService {
             creator = userRepository.findByEmail(createdByEmail).orElse(null);
         }
 
-        // Logic gia hạn cộng dồn ngày nếu đang có gói ACTIVE tương tự
-        List<MemberSubscription> activeSubs = subscriptionRepository.findActiveSubscriptionsByUserId(user.getId());
-        LocalDate newStartDate = LocalDate.now();
-        for (MemberSubscription sub : activeSubs) {
-            if (sub.getMembershipPackage().getId().equals(pkg.getId())) {
-                newStartDate = sub.getEndDate();
-                break;
-            }
-        }
-
         MemberSubscription sub = new MemberSubscription();
         sub.setUser(user);
         sub.setMembershipPackage(pkg);
         sub.setPackageNameSnapshot(pkg.getName());
         sub.setMaxClassesPerWeekSnapshot(pkg.getMaxClassesPerWeek());
         sub.setTotalAmount(pkg.getPrice());
+        // Chưa thanh toán nên chưa tính ngày
+        sub.setStartDate(null);
+        sub.setEndDate(null);
+        sub.setStatus("PENDING"); 
+        sub.setCreatedBy(creator);
+
+        return mapToResponse(subscriptionRepository.save(sub));
+    }
+
+    @Transactional
+    public MemberSubscriptionResponse activateSubscription(Long subscriptionId) {
+        MemberSubscription sub = subscriptionRepository.findById(subscriptionId)
+                .orElseThrow(() -> new BusinessRuleException("Không tìm thấy gói tập", HttpStatus.NOT_FOUND));
+
+        if (!"PENDING".equals(sub.getStatus())) {
+            throw new BusinessRuleException("Gói tập không ở trạng thái chờ thanh toán", HttpStatus.BAD_REQUEST);
+        }
+
+        MembershipPackage pkg = sub.getMembershipPackage();
+        List<MemberSubscription> activeSubs = subscriptionRepository.findActiveSubscriptionsByUserId(sub.getUser().getId());
+        
+        LocalDate newStartDate = LocalDate.now();
+        for (MemberSubscription activeSub : activeSubs) {
+            if (activeSub.getMembershipPackage().getId().equals(pkg.getId())) {
+                newStartDate = activeSub.getEndDate();
+                break;
+            }
+        }
+
         sub.setStartDate(newStartDate);
         sub.setEndDate(newStartDate.plusMonths(pkg.getDurationMonths()));
-        sub.setStatus("PENDING"); // Chỉ ACTIVE khi thanh toán thành công
-        sub.setCreatedBy(creator);
+        sub.setStatus("ACTIVE");
 
         return mapToResponse(subscriptionRepository.save(sub));
     }

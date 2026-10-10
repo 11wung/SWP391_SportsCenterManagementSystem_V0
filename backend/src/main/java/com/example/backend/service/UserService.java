@@ -140,7 +140,7 @@ public class UserService {
         if (!userRepository.existsById(id)) {
             throw new BusinessRuleException("Không tìm thấy người dùng", HttpStatus.NOT_FOUND);
         }
-        userRepository.deleteById(id);
+        updateUserStatus(id, false); // Soft Delete thay vì userRepository.deleteById(id);
     }
 
     @Transactional

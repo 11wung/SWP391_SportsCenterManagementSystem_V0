@@ -32,4 +32,27 @@ public class RoleController {
         }).collect(Collectors.toList());
         return ResponseEntity.ok(roles);
     }
+    @PreAuthorize("hasRole('MANAGER')")
+    @org.springframework.web.bind.annotation.PostMapping("/{roleId}/permissions/{permissionId}")
+    public ResponseEntity<String> assignPermissionToRole(@org.springframework.web.bind.annotation.PathVariable Long roleId, @org.springframework.web.bind.annotation.PathVariable Long permissionId, @org.springframework.beans.factory.annotation.Autowired com.example.backend.repository.PermissionRepository permissionRepository, @org.springframework.beans.factory.annotation.Autowired com.example.backend.repository.RolePermissionRepository rolePermissionRepository) {
+        com.example.backend.entity.Role role = roleRepository.findById(roleId).orElseThrow();
+        com.example.backend.entity.Permission permission = permissionRepository.findById(permissionId).orElseThrow();
+        
+        com.example.backend.entity.RolePermissionId rpId = new com.example.backend.entity.RolePermissionId(role.getId(), permission.getId());
+        if (!rolePermissionRepository.existsById(rpId)) {
+            com.example.backend.entity.RolePermission rp = new com.example.backend.entity.RolePermission(role, permission);
+            rolePermissionRepository.save(rp);
+        }
+        return ResponseEntity.ok("Assigned permission successfully");
+    }
+
+    @PreAuthorize("hasRole('MANAGER')")
+    @org.springframework.web.bind.annotation.DeleteMapping("/{roleId}/permissions/{permissionId}")
+    public ResponseEntity<String> removePermissionFromRole(@org.springframework.web.bind.annotation.PathVariable Long roleId, @org.springframework.web.bind.annotation.PathVariable Long permissionId, @org.springframework.beans.factory.annotation.Autowired com.example.backend.repository.RolePermissionRepository rolePermissionRepository) {
+        com.example.backend.entity.RolePermissionId rpId = new com.example.backend.entity.RolePermissionId(roleId, permissionId);
+        if (rolePermissionRepository.existsById(rpId)) {
+            rolePermissionRepository.deleteById(rpId);
+        }
+        return ResponseEntity.ok("Removed permission successfully");
+    }
 }
