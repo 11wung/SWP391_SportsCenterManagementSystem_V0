@@ -24,4 +24,18 @@ public class RolePermission {
     @JoinColumn(name = "permission_id", nullable = false)
     private Permission permission;
 
+    public RolePermission() {}
+
+    public RolePermission(Role role, Permission permission) {
+        this.role = role;
+        this.permission = permission;
+        this.id = new RolePermissionId(role.getId(), permission.getId());
+    }
+
+    public RolePermissionId getId() { return id; }
+    public void setId(RolePermissionId id) { this.id = id; }
+    public Role getRole() { return role; }
+    public void setRole(Role role) { this.role = role; }
+    public Permission getPermission() { return permission; }
+    public void setPermission(Permission permission) { this.permission = permission; }
 }

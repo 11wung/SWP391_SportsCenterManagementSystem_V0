@@ -76,4 +76,10 @@ public class MemberSubscriptionController {
         
         return ResponseEntity.ok(subscriptionService.createSubscription(request, email));
     }
+    // 5. Manager / Lễ tân Kích hoạt gói tập (sau khi thanh toán)
+    @PreAuthorize("hasAnyRole('MANAGER', 'RECEPTIONIST')")
+    @PutMapping("/{id}/activate")
+    public ResponseEntity<MemberSubscriptionResponse> activateSubscription(@PathVariable Long id) {
+        return ResponseEntity.ok(subscriptionService.activateSubscription(id));
+    }
 }

@@ -65,4 +65,12 @@ public class Role {
     public void setId(Long id) {
         this.id = id;
     }
+
+    public List<RolePermission> getRolePermissions() {
+        return rolePermissions;
+    }
+
+    public void setRolePermissions(List<RolePermission> rolePermissions) {
+        this.rolePermissions = rolePermissions;
+    }
 }

@@ -1,8 +1,10 @@
 package com.example.backend.entity;
 
+import jakarta.persistence.Embeddable;
 import java.io.Serializable;
 import java.util.Objects;
 
+@Embeddable
 public class RolePermissionId implements Serializable {
 
     private Long roleId;
@@ -24,4 +26,16 @@ public class RolePermissionId implements Serializable {
     public int hashCode() {
         return Objects.hash(roleId, permissionId);
     }
+
+    public RolePermissionId() {}
+
+    public RolePermissionId(Long roleId, Long permissionId) {
+        this.roleId = roleId;
+        this.permissionId = permissionId;
+    }
+
+    public Long getRoleId() { return roleId; }
+    public void setRoleId(Long roleId) { this.roleId = roleId; }
+    public Long getPermissionId() { return permissionId; }
+    public void setPermissionId(Long permissionId) { this.permissionId = permissionId; }
 }
