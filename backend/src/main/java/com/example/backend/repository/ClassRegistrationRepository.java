@@ -23,4 +23,8 @@ public interface ClassRegistrationRepository extends JpaRepository<ClassRegistra
 
     // Lấy danh sách học viên trong 1 lớp (cho Coach xem)
     List<ClassRegistration> findBySportClassIdAndStatus(Long sportClassId, String status);
+
+    // Tìm người trong hàng chờ nộp đơn sớm nhất để đôn lên khi có người hủy
+    Optional<ClassRegistration> findFirstBySportClassIdAndStatusOrderByRegisteredAtAsc(Long sportClassId,
+            String status);
 }
