@@ -25,7 +25,8 @@ public interface ClassRegistrationRepository extends JpaRepository<ClassRegistra
     Optional<ClassRegistration> findByIdAndUser_Id(Long id, Long userId);
 
     // Đếm booking của học viên theo trạng thái và khoảng thời gian
-    long countByUser_IdAndStatusAndRegisteredAtBetween(
-            Long userId, String status,
-            OffsetDateTime start, OffsetDateTime end);
+    long countByUser_IdAndStatusAndRegisteredAtBetween(Long userId, String status,OffsetDateTime start, OffsetDateTime end);
+
+    boolean existsBySportClass_Id(Long classId);
+
 }
