@@ -1,6 +1,7 @@
 package com.example.backend.service;
 
 import com.example.backend.dto.PaymentRequest;
+import com.example.backend.dto.PaymentResponse;
 import com.example.backend.entity.MemberSubscription;
 import com.example.backend.entity.Payment;
 import com.example.backend.entity.User;
@@ -14,7 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +29,7 @@ public class PaymentService {
     private final MemberSubscriptionService subscriptionService;
 
     @Transactional
-    public Payment processPayment(PaymentRequest request, String processedByEmail) {
+    public PaymentResponse processPayment(PaymentRequest request, String processedByEmail) {
         MemberSubscription sub = subscriptionRepository.findById(request.getSubscriptionId())
                 .orElseThrow(() -> new BusinessRuleException("Không tìm thấy gói đăng ký", HttpStatus.NOT_FOUND));
 
@@ -48,16 +51,38 @@ public class PaymentService {
         payment.setAmount(request.getAmount());
         payment.setPaymentMethod(request.getPaymentMethod());
         
-        // Giả lập thanh toán thành công luôn
         payment.setStatus("SUCCESS");
         payment.setPaidAt(OffsetDateTime.now());
         payment.setGatewayResponse("{\"message\": \"Success\"}");
 
-        paymentRepository.save(payment);
+        Payment saved = paymentRepository.save(payment);
 
-        // Gọi service kích hoạt gói
         subscriptionService.activateSubscription(sub.getId());
 
-        return payment;
+        return mapToResponse(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PaymentResponse> getAllPayments() {
+        return paymentRepository.findAll().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    private PaymentResponse mapToResponse(Payment p) {
+        return PaymentResponse.builder()
+                .id(p.getId())
+                .subscriptionId(p.getSubscription() != null ? p.getSubscription().getId() : null)
+                .payerId(p.getPayer() != null ? p.getPayer().getId() : null)
+                .payerName(p.getPayer() != null ? p.getPayer().getFullName() : "N/A")
+                .receivedBy(p.getReceivedBy() != null ? p.getReceivedBy().getFullName() : "Hệ thống")
+                .invoiceNumber(p.getInvoiceNumber())
+                .transactionCode(p.getTransactionCode())
+                .amount(p.getAmount())
+                .paymentMethod(p.getPaymentMethod())
+                .status(p.getStatus())
+                .paidAt(p.getPaidAt())
+                .createdAt(p.getCreatedAt())
+                .build();
     }
 }

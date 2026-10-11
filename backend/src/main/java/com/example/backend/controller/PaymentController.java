@@ -1,6 +1,7 @@
 package com.example.backend.controller;
 
 import com.example.backend.dto.PaymentRequest;
+import com.example.backend.dto.PaymentResponse;
 import com.example.backend.service.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/payments")
@@ -17,8 +20,14 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PreAuthorize("hasAnyRole('MANAGER', 'RECEPTIONIST')")
+    @GetMapping
+    public ResponseEntity<List<PaymentResponse>> getAllPayments() {
+        return ResponseEntity.ok(paymentService.getAllPayments());
+    }
+
+    @PreAuthorize("hasAnyRole('MANAGER', 'RECEPTIONIST')")
     @PostMapping
-    public ResponseEntity<?> processPayment(@Valid @RequestBody PaymentRequest request, Authentication authentication) {
+    public ResponseEntity<PaymentResponse> processPayment(@Valid @RequestBody PaymentRequest request, Authentication authentication) {
         String email = authentication.getName();
         return ResponseEntity.ok(paymentService.processPayment(request, email));
     }
